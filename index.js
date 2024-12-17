@@ -31,14 +31,33 @@ async function run() {
 
     const productCollection = client.db('emaJohnDB').collection('products');
 
-    app.get('/products', async(req, res) => {
-        const result = await productCollection.find().toArray();
-        res.send(result);
-    })
-
+    
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
+
+
+
+    app.get('/products', async (req, res) => {
+      const page = parseInt(req.query.page);
+      const size = parseInt(req.query.size);
+      console.log('pagination query',page,size)
+      const result = await productCollection.find()
+        .skip(page * size)
+        .limit(size)
+        .toArray();
+        res.send(result);
+    })
+
+    app.get('/productsCount', async (req, res) => {
+      const count = await productCollection.estimatedDocumentCount();
+      res.send({ count });
+    })
+
+
+
+
+
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
